@@ -6,7 +6,9 @@
 #include "history.h"
 #include "token.h"
 #include "lexer.h"
-
+#include "parser.h"
+#include "expand.h"
+#include "builtin.h"
 
 int main(void)
 {
@@ -17,48 +19,55 @@ int main(void)
     printf("=====================================\n");
 
  token_list_t tokens;
- using_history(); 
+ pipeline_t pipeline;
+ 
  char *line;
 
     while (1)
     {
         line = readline("shellforge$ ");
-
-      if (strcmp(line, "exit") == 0)
-        {
-            free(line);
-            printf("Exiting...\n");
-            break;
-        }
-
-
         if (line == NULL)
         {
             printf("\nGoodbye!\n");
             break;
         }
-
         if (strlen(line) == 0)
         {
             free(line);
             continue;
         }
 
-        if (strcmp(line, "history") == 0)
-        {
-           print_history();
-           free(line);
+       if (strcmp(line, "history") == 0)
+       {
+          print_history();
+          free(line);
            continue;
-        }
+       }
+// milestone 1 - enabling history
 
         add_history(line);
+
+// milestone 2.1 - tokenization and lexer
+
 	lexer(line, &tokens);
+
         token_print(&tokens);
-     
+
+// milestone 2.2 - expansion of environment variables and parser
+
+	if(parser(&tokens, &pipeline))
+	{
+		expand_variables(&pipeline);
+    	        pipeline_print(&pipeline);
+	}
+
        free(line);
-    }    
+
+    }
+
     return 0;
 }
+
 
 
 
