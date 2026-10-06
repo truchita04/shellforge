@@ -8,7 +8,9 @@
 #include "lexer.h"
 #include "parser.h"
 #include "expand.h"
-#include "builtin.h"
+#include "builtin.h
+#include "executor.h"
+#include "jobs.h"
 
 int main(void)
 {
@@ -18,6 +20,15 @@ int main(void)
     printf(" A Unix Style Shell written in C\n");
     printf("=====================================\n");
 
+ /* =============================================
+       INSTALL BACKGROUND PROCESS HANDLER
+       ============================================= */
+
+	jobs_init();
+    setup_background_handler();
+
+ 
+ using_history();
  token_list_t tokens;
  pipeline_t pipeline;
  
@@ -51,28 +62,29 @@ int main(void)
 
 	lexer(line, &tokens);
 
-        token_print(&tokens);
+        // token_print(&tokens);
 
 // milestone 2.2 - expansion of environment variables and parser
 
 	if(parser(&tokens, &pipeline))
 	{
 		expand_variables(&pipeline);
-    	        pipeline_print(&pipeline);
+    	//	pipeline_print(&pipeline);
 	}
+
+
+	if (pipeline.command_count == 1 &&  pipeline.commands[0].argc > 0 && strcmp(pipeline.commands[0].argv[0],"exit") == 0)
+         {
+                free(line);
+                break;
+            }
+
+        execute_pipeline(&pipeline);
 
        free(line);
 
     }
-
     return 0;
 }
-
-
-
-
-
-
-
 
 
